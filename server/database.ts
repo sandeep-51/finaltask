@@ -7,6 +7,16 @@ const db = new Database("tickets.db");
 // Enable WAL mode for better concurrent access
 db.pragma("journal_mode = WAL");
 
+// Migration: Add formId column if it doesn't exist
+try {
+  db.exec(`ALTER TABLE registrations ADD COLUMN formId INTEGER`);
+} catch (error: any) {
+  // Column already exists, ignore error
+  if (!error.message.includes("duplicate column name")) {
+    console.error("Migration warning:", error.message);
+  }
+}
+
 // Create tables
 db.exec(`
   CREATE TABLE IF NOT EXISTS registrations (
