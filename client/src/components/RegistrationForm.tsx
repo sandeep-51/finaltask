@@ -362,6 +362,7 @@ export default function RegistrationForm({ heroImage = "/freefire-bg.jpg" }: Reg
             Admin Access
           </a>
         </div>
+        </div>
       </div>
     </div>
   );
