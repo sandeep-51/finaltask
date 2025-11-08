@@ -320,6 +320,30 @@ export class TicketDatabase {
     return result.deletedCount > 0;
   }
 
+  async getScanHistory(limit?: number): Promise<ScanHistory[]> {
+    const database = await this.getDb();
+    const query = database.collection("scan_history")
+      .find({})
+      .sort({ scannedAt: -1 });
+    
+    if (limit) {
+      query.limit(limit);
+    }
+
+    const history = await query.toArray();
+    return history as unknown as ScanHistory[];
+  }
+
+  async getScanHistoryByTicketId(ticketId: string): Promise<ScanHistory[]> {
+    const database = await this.getDb();
+    const history = await database.collection("scan_history")
+      .find({ ticketId })
+      .sort({ scannedAt: -1 })
+      .toArray();
+    
+    return history as unknown as ScanHistory[];
+  }
+
   exportToCSV(registrations: Registration[]): string {
     const allCustomFieldKeys = new Set<string>();
     registrations.forEach(r => {
