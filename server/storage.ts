@@ -70,12 +70,7 @@ export class SqliteStorage implements IStorage {
       return { valid: false, message: "Ticket not found." };
     }
 
-    if (registration.status === "exhausted") {
-      return { valid: false, message: "This ticket has reached its maximum scan limit." };
-    }
-
     if (registration.scans >= registration.maxScans) {
-      await ticketDb.updateRegistration(ticketId, { status: "exhausted" });
       return { valid: false, message: "This ticket has reached its maximum scan limit." };
     }
 

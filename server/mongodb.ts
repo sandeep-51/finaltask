@@ -159,16 +159,7 @@ export class TicketDatabase {
       return { valid: false, registration: registration as unknown as Registration, message: "QR code not generated yet" };
     }
 
-    if (registration.status === "exhausted") {
-      return { valid: false, registration: registration as unknown as Registration, message: "Ticket exhausted - max scans reached" };
-    }
-
     if (registration.scans >= registration.maxScans) {
-      await database.collection("registrations").updateOne(
-        { id: ticketId },
-        { $set: { status: "exhausted" } }
-      );
-      registration.status = "exhausted";
       return { valid: false, registration: registration as unknown as Registration, message: "Maximum scans reached" };
     }
 
