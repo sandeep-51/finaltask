@@ -65,9 +65,15 @@ function PublicFormView() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [checkingAdmin, setCheckingAdmin] = useState(true);
 
-  const { data: publishedForm, isLoading } = useQuery<EventForm | null>({
+  const { data: publishedForm, isLoading, error } = useQuery<EventForm | null>({
     queryKey: ["/api/published-form"],
   });
+
+  useEffect(() => {
+    console.log("PublicFormView - Published form data:", publishedForm);
+    console.log("PublicFormView - Is loading:", isLoading);
+    console.log("PublicFormView - Error:", error);
+  }, [publishedForm, isLoading, error]);
 
   useEffect(() => {
     // Check if user is admin
