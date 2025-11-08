@@ -419,9 +419,37 @@ export default function RegistrationForm({ publishedForm }: RegistrationFormProp
 
           {/* Right Column - Registration Form */}
           <div className="lg:col-span-2">
+            {/* Payment Button - Only show if payment field exists */}
+            {paymentField && paymentField.paymentUrl && (
+              <Card className="bg-gradient-to-r from-[#ff6b35] to-[#ff5722] border-0 mb-6">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-white font-bold text-xl mb-2">Step 1: Complete Payment</h3>
+                      <p className="text-white/90 text-sm">Pay ₹99 registration fee before filling the form</p>
+                    </div>
+                    <Button
+                      onClick={() => window.open(paymentField.paymentUrl, '_blank')}
+                      className="bg-white text-[#ff6b35] hover:bg-gray-100 font-bold px-8 py-6 text-lg"
+                    >
+                      <DollarSign className="h-5 w-5 mr-2" />
+                      Proceed to Payment
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             <Card className="bg-[#232835] border-[#2d3548]">
               <CardHeader>
-                <CardTitle className="text-white text-2xl">TEAM REGISTRATION</CardTitle>
+                <CardTitle className="text-white text-2xl">
+                  {paymentField ? 'TEAM REGISTRATION (Step 2)' : 'TEAM REGISTRATION'}
+                </CardTitle>
+                {paymentField && (
+                  <CardDescription className="text-gray-400">
+                    After completing payment, fill in your details and paste the transaction ID below
+                  </CardDescription>
+                )}
               </CardHeader>
               <CardContent>
                 <Form {...form}>
