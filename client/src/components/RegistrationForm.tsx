@@ -719,25 +719,27 @@ export default function RegistrationForm({ publishedForm }: RegistrationFormProp
                         </div>
 
                         <div className="p-4 bg-[#1a1d29] rounded-lg border border-[#2d3548]">
-                          <Label className="text-gray-300 mb-2 block">Select Your Squad Type</Label>
+                          <Label className="text-gray-300 mb-2 block font-semibold">Select Your Squad Type</Label>
                           <Select value={selectedMemberCount.toString()} onValueChange={handleMemberCountChange}>
-                            <SelectTrigger className="bg-[#232835] border-[#2d3548] text-white">
+                            <SelectTrigger className="bg-[#232835] border-[#2d3548] text-white hover:border-[#ff6b35]">
                               <SelectValue placeholder="Select squad type" />
                             </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="0">Solo (No Team Members)</SelectItem>
+                            <SelectContent className="bg-[#232835] border-[#2d3548]">
+                              <SelectItem value="0" className="text-white hover:bg-[#1a1d29]">
+                                🎯 Solo (No Team Members)
+                              </SelectItem>
                               {Array.from({ length: maxTeamMembers }, (_, i) => i + 1).map((num) => (
-                                <SelectItem key={num} value={num.toString()}>
-                                  {num === 1 ? 'Duo (1 Team Member)' : 
-                                   num === 2 ? 'Trio (2 Team Members)' : 
-                                   num === 3 ? 'Squad (3 Team Members)' : 
-                                   `${num} Team Members`}
+                                <SelectItem key={num} value={num.toString()} className="text-white hover:bg-[#1a1d29]">
+                                  {num === 1 ? '👥 Duo (1 Team Member)' : 
+                                   num === 2 ? '👥👥 Trio (2 Team Members)' : 
+                                   num === 3 ? '👥👥👥 Squad (3 Team Members)' : 
+                                   `👥 ${num} Team Members`}
                                 </SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
                           {selectedMemberCount === 0 && (
-                            <p className="text-sm text-gray-400 mt-2">
+                            <p className="text-sm text-[#ff6b35] mt-2 font-medium">
                               ✓ Playing solo - no team member forms needed
                             </p>
                           )}

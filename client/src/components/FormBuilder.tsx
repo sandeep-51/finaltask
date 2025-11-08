@@ -753,7 +753,7 @@ export default function FormBuilder({ formId, onSuccess }: FormBuilderProps) {
                   name="baseFields.teamMembers.maxTeamMembers"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sm">Maximum Team Members Allowed</FormLabel>
+                      <FormLabel className="text-sm font-semibold">Maximum Team Members Allowed</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
@@ -762,12 +762,14 @@ export default function FormBuilder({ formId, onSuccess }: FormBuilderProps) {
                           placeholder="Enter max team members (0-20)"
                           {...field}
                           onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                          value={field.value || 4}
+                          value={field.value ?? 4}
                           data-testid="input-max-team-members"
                         />
                       </FormControl>
-                      <FormDescription>
-                        Users will be able to add up to this many team members (0 for no team members, default: 4)
+                      <FormDescription className="text-xs">
+                        <strong>0</strong> = Solo only (no team members allowed)<br/>
+                        <strong>1-20</strong> = Users can select from Solo up to this number<br/>
+                        Default: 4
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
