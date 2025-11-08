@@ -142,13 +142,12 @@ export default function RegistrationForm({ publishedForm }: RegistrationFormProp
   if (baseFields.organization?.enabled) defaultValues.organization = "";
   if (baseFields.groupSize?.enabled) defaultValues.groupSize = "1";
 
-  // Initialize team members array based on maxTeamMembers configuration
-  const initialMaxMembers = publishedForm?.baseFields?.teamMembers?.maxTeamMembers || 4;
-  defaultValues.teamMembers = Array.from({ length: initialMaxMembers }, () => ({ 
+  // Initialize team members array with 1 member by default
+  defaultValues.teamMembers = [{ 
     name: "", 
     email: "", 
     phone: "" 
-  }));
+  }];
 
   customFields.forEach((field) => {
     defaultValues[field.id] = "";
@@ -160,11 +159,29 @@ export default function RegistrationForm({ publishedForm }: RegistrationFormProp
   });
 
   const maxTeamMembers = publishedForm?.baseFields?.teamMembers?.maxTeamMembers || 4;
+  const [selectedMemberCount, setSelectedMemberCount] = useState(1);
 
   const { fields: teamMemberFields, append: appendTeamMember, remove: removeTeamMember } = useFieldArray({
     control: form.control,
     name: "teamMembers",
   });
+
+  const handleMemberCountChange = (count: string) => {
+    const newCount = parseInt(count);
+    setSelectedMemberCount(newCount);
+    
+    const currentCount = teamMemberFields.length;
+    
+    if (newCount > currentCount) {
+      for (let i = currentCount; i < newCount; i++) {
+        appendTeamMember({ name: "", email: "", phone: "" });
+      }
+    } else if (newCount < currentCount) {
+      for (let i = currentCount - 1; i >= newCount; i--) {
+        removeTeamMember(i);
+      }
+    }
+  };
 
   const uploadPhotoMutation = useMutation({
     mutationFn: async (file: File) => {
@@ -570,7 +587,23 @@ export default function RegistrationForm({ publishedForm }: RegistrationFormProp
                           <h3 className="text-[#ff6b35] font-semibold text-lg">
                             {teamMembersConfig.label.toUpperCase()}
                           </h3>
-                          <span className="text-sm text-gray-400">(Optional, Max {maxTeamMembers})</span>
+                          <span className="text-sm text-gray-400">(Required, Max {maxTeamMembers})</span>
+                        </div>
+                        
+                        <div className="p-4 bg-[#1a1d29] rounded-lg border border-[#2d3548]">
+                          <Label className="text-gray-300 mb-2 block">How many team members?</Label>
+                          <Select value={selectedMemberCount.toString()} onValueChange={handleMemberCountChange}>
+                            <SelectTrigger className="bg-[#232835] border-[#2d3548] text-white">
+                              <SelectValue placeholder="Select number of members" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {Array.from({ length: maxTeamMembers }, (_, i) => i + 1).map((num) => (
+                                <SelectItem key={num} value={num.toString()}>
+                                  {num} {num === 1 ? 'Member' : 'Members'}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </div>
                         
                         {teamMemberFields.map((field, index) => (
