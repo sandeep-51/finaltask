@@ -111,7 +111,7 @@ export default function RegistrationsTable({
     const statusConfig = {
       pending: { label: "Pending QR", variant: "secondary" as const, icon: Clock, className: "" },
       active: { label: `Active (${scans}/${maxScans})`, variant: "default" as const, icon: CheckCircle2, className: "" },
-      "checked-in": { label: "Checked In", variant: "default" as const, icon: CheckCircle2, className: "bg-blue-600 hover:bg-blue-700" },
+      "checked-in": { label: `Checked In (${scans}/${maxScans})`, variant: "default" as const, icon: CheckCircle2, className: "bg-blue-600 hover:bg-blue-700 text-white" },
       exhausted: { label: `Exhausted (${maxScans}/${maxScans})`, variant: "destructive" as const, icon: XCircle, className: "" },
       invalid: { label: "Invalid", variant: "destructive" as const, icon: XCircle, className: "" },
     };

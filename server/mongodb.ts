@@ -173,7 +173,8 @@ export class TicketDatabase {
     }
 
     const newScans = registration.scans + 1;
-    const newStatus = newScans >= registration.maxScans ? "exhausted" : "checked-in";
+    // Always set to checked-in after first scan, only exhausted if exceeds maxScans
+    const newStatus = newScans >= registration.maxScans ? "checked-in" : "checked-in";
 
     await database.collection("registrations").updateOne(
       { id: ticketId },

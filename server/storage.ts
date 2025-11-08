@@ -81,15 +81,8 @@ export class SqliteStorage implements IStorage {
 
     // Update scan count and status
     const newScans = registration.scans + 1;
-    let newStatus: "active" | "checked-in" | "exhausted";
-
-    if (newScans >= registration.maxScans) {
-      newStatus = "exhausted";
-    } else if (newScans === 1) {
-      newStatus = "checked-in";
-    } else {
-      newStatus = "active";
-    }
+    // Always mark as checked-in after scanning
+    const newStatus = "checked-in";
 
     await ticketDb.updateRegistration(ticketId, { 
       scans: newScans,
