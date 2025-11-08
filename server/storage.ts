@@ -81,8 +81,8 @@ export class SqliteStorage implements IStorage {
 
     // Update scan count and status
     const newScans = registration.scans + 1;
-    // Always mark as checked-in after scanning
-    const newStatus = "checked-in";
+    // Once checked-in, keep status as checked-in permanently
+    const newStatus = registration.status === "checked-in" ? "checked-in" : "checked-in";
 
     await ticketDb.updateRegistration(ticketId, { 
       scans: newScans,
