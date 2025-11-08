@@ -371,20 +371,40 @@ export class TicketDatabase {
 
   async publishEventForm(id: number) {
     const database = await this.getDb();
+    console.log("📢 Publishing form with ID:", id);
+    
+    // First unpublish all forms
     await database.collection("event_forms").updateMany({}, { $set: { isPublished: false } });
+    console.log("📢 Unpublished all other forms");
+    
+    // Then publish this specific form
     const result = await database.collection("event_forms").updateOne(
       { id },
       { $set: { isPublished: true, updatedAt: new Date().toISOString() } }
     );
+    
+    console.log("📢 Publish result:", { 
+      matchedCount: result.matchedCount, 
+      modifiedCount: result.modifiedCount 
+    });
+    
     return result.modifiedCount > 0;
   }
 
   async unpublishEventForm(id: number) {
     const database = await this.getDb();
+    console.log("📢 Unpublishing form with ID:", id);
+    
     const result = await database.collection("event_forms").updateOne(
       { id },
       { $set: { isPublished: false, updatedAt: new Date().toISOString() } }
     );
+    
+    console.log("📢 Unpublish result:", { 
+      matchedCount: result.matchedCount, 
+      modifiedCount: result.modifiedCount 
+    });
+    
     return result.modifiedCount > 0;
   }
 
