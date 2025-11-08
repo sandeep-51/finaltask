@@ -373,6 +373,13 @@ export class TicketDatabase {
     const database = await this.getDb();
     console.log("📢 Publishing form with ID:", id);
     
+    // Verify form exists first
+    const formExists = await database.collection("event_forms").findOne({ id });
+    if (!formExists) {
+      console.error("❌ Form not found with ID:", id);
+      throw new Error(`Form with ID ${id} not found`);
+    }
+    
     // First unpublish all forms
     await database.collection("event_forms").updateMany({}, { $set: { isPublished: false } });
     console.log("📢 Unpublished all other forms");
@@ -388,12 +395,23 @@ export class TicketDatabase {
       modifiedCount: result.modifiedCount 
     });
     
-    return result.modifiedCount > 0;
+    if (result.matchedCount === 0) {
+      throw new Error(`Form with ID ${id} not found`);
+    }
+    
+    return result.modifiedCount > 0 || result.matchedCount > 0;
   }
 
   async unpublishEventForm(id: number) {
     const database = await this.getDb();
     console.log("📢 Unpublishing form with ID:", id);
+    
+    // Verify form exists first
+    const formExists = await database.collection("event_forms").findOne({ id });
+    if (!formExists) {
+      console.error("❌ Form not found with ID:", id);
+      throw new Error(`Form with ID ${id} not found`);
+    }
     
     const result = await database.collection("event_forms").updateOne(
       { id },
@@ -405,7 +423,11 @@ export class TicketDatabase {
       modifiedCount: result.modifiedCount 
     });
     
-    return result.modifiedCount > 0;
+    if (result.matchedCount === 0) {
+      throw new Error(`Form with ID ${id} not found`);
+    }
+    
+    return result.modifiedCount > 0 || result.matchedCount > 0;
   }
 
   async deleteEventForm(id: number) {

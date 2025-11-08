@@ -164,7 +164,15 @@ export default function FormsList({ onFormClick }: FormsListProps) {
       ) : (
         <div className="grid gap-4">
           {forms.map((form) => {
-            const formId = form.id || 0;
+            // Ensure formId is properly extracted
+            const formId = typeof form.id === 'number' ? form.id : 0;
+            
+            // Skip forms with invalid IDs
+            if (!formId) {
+              console.warn("Form with invalid ID detected:", form);
+              return null;
+            }
+            
             return (
               <Card key={formId} data-testid={`form-card-${formId}`}>
                 <CardHeader>
@@ -203,9 +211,19 @@ export default function FormsList({ onFormClick }: FormsListProps) {
                         <Button
                           variant="outline"
                           size="icon"
-                          onClick={() => {
-                            console.log("Unpublishing form:", formId);
-                            unpublishMutation.mutate(formId);
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (formId && typeof formId === 'number') {
+                              console.log("Unpublishing form:", formId);
+                              unpublishMutation.mutate(formId);
+                            } else {
+                              console.error("Invalid form ID:", formId);
+                              toast({
+                                title: "Error",
+                                description: "Invalid form ID",
+                                variant: "destructive",
+                              });
+                            }
                           }}
                           disabled={unpublishMutation.isPending}
                           data-testid={`button-unpublish-${formId}`}
@@ -221,9 +239,19 @@ export default function FormsList({ onFormClick }: FormsListProps) {
                         <Button
                           variant="outline"
                           size="icon"
-                          onClick={() => {
-                            console.log("Publishing form:", formId);
-                            publishMutation.mutate(formId);
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (formId && typeof formId === 'number') {
+                              console.log("Publishing form:", formId);
+                              publishMutation.mutate(formId);
+                            } else {
+                              console.error("Invalid form ID:", formId);
+                              toast({
+                                title: "Error",
+                                description: "Invalid form ID",
+                                variant: "destructive",
+                              });
+                            }
                           }}
                           disabled={publishMutation.isPending}
                           data-testid={`button-publish-${formId}`}
