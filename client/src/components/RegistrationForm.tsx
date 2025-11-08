@@ -113,7 +113,7 @@ const buildDynamicSchema = (customFields: CustomField[] = [], baseFields?: Event
       teamMemberFieldsSchema[field.id] = field.required ? fieldSchema : z.string().optional().or(z.literal(""));
     });
 
-    baseSchema.teamMembers = z.array(z.object(teamMemberFieldsSchema)).min(1, "At least one team member is required");
+    baseSchema.teamMembers = z.array(z.object(teamMemberFieldsSchema)).optional();
   }
 
   const customFieldsSchema: Record<string, z.ZodTypeAny> = {};
@@ -220,7 +220,9 @@ export default function RegistrationForm({ publishedForm }: RegistrationFormProp
     teamMemberDefaults[field.id] = "";
   });
 
-  defaultValues.teamMembers = [];
+  if (baseFields.teamMembers?.enabled) {
+    defaultValues.teamMembers = [];
+  }
 
   customFields.forEach((field) => {
     defaultValues[field.id] = "";
@@ -310,9 +312,11 @@ export default function RegistrationForm({ publishedForm }: RegistrationFormProp
       if (baseFields.organization?.enabled && data.organization) payload.organization = data.organization;
       if (baseFields.groupSize?.enabled && data.groupSize) payload.groupSize = parseInt(data.groupSize);
 
-      // Add team members
-      if (data.teamMembers && data.teamMembers.length > 0) {
+      // Add team members (can be empty array if 0 selected)
+      if (data.teamMembers) {
         payload.teamMembers = data.teamMembers.filter((m: any) => m.name || m.email || m.phone);
+      } else {
+        payload.teamMembers = [];
       }
 
       console.log("📤 Sending payload:", payload);
