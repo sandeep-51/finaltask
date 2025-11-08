@@ -220,7 +220,7 @@ export default function RegistrationForm({ publishedForm }: RegistrationFormProp
     teamMemberDefaults[field.id] = "";
   });
 
-  defaultValues.teamMembers = [teamMemberDefaults];
+  defaultValues.teamMembers = [];
 
   customFields.forEach((field) => {
     defaultValues[field.id] = "";
@@ -232,7 +232,7 @@ export default function RegistrationForm({ publishedForm }: RegistrationFormProp
   });
 
   const maxTeamMembers = publishedForm?.baseFields?.teamMembers?.maxTeamMembers || 4;
-  const [selectedMemberCount, setSelectedMemberCount] = useState(1);
+  const [selectedMemberCount, setSelectedMemberCount] = useState(0);
 
   const { fields: teamMemberFields, append: appendTeamMember, remove: removeTeamMember } = useFieldArray({
     control: form.control,
@@ -245,7 +245,12 @@ export default function RegistrationForm({ publishedForm }: RegistrationFormProp
 
     const currentCount = teamMemberFields.length;
 
-    if (newCount > currentCount) {
+    if (newCount === 0) {
+      // Remove all team members
+      for (let i = currentCount - 1; i >= 0; i--) {
+        removeTeamMember(i);
+      }
+    } else if (newCount > currentCount) {
       for (let i = currentCount; i < newCount; i++) {
         appendTeamMember({ name: "", email: "", phone: "" });
       }
@@ -716,6 +721,7 @@ export default function RegistrationForm({ publishedForm }: RegistrationFormProp
                               <SelectValue placeholder="Select number of members" />
                             </SelectTrigger>
                             <SelectContent>
+                              <SelectItem value="0">0 Members</SelectItem>
                               {Array.from({ length: maxTeamMembers }, (_, i) => i + 1).map((num) => (
                                 <SelectItem key={num} value={num.toString()}>
                                   {num} {num === 1 ? 'Member' : 'Members'}
