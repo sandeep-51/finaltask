@@ -91,7 +91,56 @@ export default function AdminDashboard({ onLogout }: AdminDashboardProps) {
             </TabsContent>
 
             <TabsContent value="scanner" className="space-y-6">
-              <QRScanner />
+              <QRScanner 
+                onScan={async (ticketId) => {
+                  try {
+                    const response = await fetch(`/api/verify?t=${ticketId}`, {
+                      credentials: "include",
+                    });
+                    
+                    if (!response.ok) {
+                      throw new Error("Verification failed");
+                    }
+                    
+                    const data = await response.json();
+                    
+                    // Transform the nested response to flat structure expected by QRScanner
+                    if (data.registration) {
+                      return {
+                        ticketId: data.registration.id,
+                        name: data.registration.name,
+                        email: data.registration.email,
+                        phone: data.registration.phone,
+                        organization: data.registration.organization,
+                        groupSize: data.registration.groupSize,
+                        teamMembers: data.registration.teamMembers || [],
+                        customFieldData: data.registration.customFieldData || {},
+                        scansUsed: data.registration.scansUsed,
+                        maxScans: data.registration.maxScans,
+                        valid: data.valid,
+                        message: data.message,
+                        timestamp: new Date(),
+                      };
+                    }
+                    
+                    return {
+                      ticketId,
+                      name: "Unknown",
+                      organization: "",
+                      groupSize: 1,
+                      teamMembers: [],
+                      scansUsed: 0,
+                      maxScans: 1,
+                      valid: data.valid,
+                      message: data.message,
+                      timestamp: new Date(),
+                    };
+                  } catch (error) {
+                    console.error("Scan error:", error);
+                    return null;
+                  }
+                }}
+              />
             </TabsContent>
 
             <TabsContent value="generator" className="space-y-6">
