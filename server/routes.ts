@@ -121,6 +121,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const result = await storage.verifyAndScan(ticketId);
 
+      // Calculate actual group size including leader
+      const actualGroupSize = result.registration ? 
+        1 + (result.registration.teamMembers?.length || 0) : 1;
+
       res.json({
         valid: result.valid,
         message: result.message,
@@ -130,7 +134,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           email: result.registration.email,
           phone: result.registration.phone,
           organization: result.registration.organization,
-          groupSize: result.registration.groupSize,
+          groupSize: actualGroupSize,
           teamMembers: result.registration.teamMembers || [],
           customFieldData: result.registration.customFieldData || {},
           scansUsed: result.registration.scans,

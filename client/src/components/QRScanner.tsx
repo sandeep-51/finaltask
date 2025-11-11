@@ -276,16 +276,25 @@ export default function QRScanner({ onScan }: QRScannerProps) {
 
                         {lastResult.teamMembers && lastResult.teamMembers.length > 0 && (
                           <div className="pt-3 border-t">
-                            <p className="text-sm font-semibold mb-2">Team Members ({lastResult.teamMembers.length}):</p>
-                            <div className="space-y-2 max-h-32 overflow-y-auto">
+                            <p className="text-sm font-semibold mb-2 flex items-center gap-2">
+                              <Users className="h-4 w-4" />
+                              Team Members ({lastResult.teamMembers.length}):
+                            </p>
+                            <div className="space-y-2 max-h-48 overflow-y-auto">
                               {lastResult.teamMembers.map((member, idx) => (
-                                <div key={idx} className="text-sm p-2 bg-muted rounded">
-                                  <p className="font-medium">{idx + 1}. {member.name || "Unnamed"}</p>
+                                <div key={idx} className="text-sm p-3 bg-muted/50 rounded border">
+                                  <p className="font-semibold text-primary mb-1">
+                                    Member {idx + 1}: {member.name || "Unnamed"}
+                                  </p>
                                   {member.email && (
-                                    <p className="text-xs text-muted-foreground">{member.email}</p>
+                                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                      <span className="font-medium">Email:</span> {member.email}
+                                    </p>
                                   )}
                                   {member.phone && (
-                                    <p className="text-xs text-muted-foreground">{member.phone}</p>
+                                    <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                      <span className="font-medium">Phone:</span> {member.phone}
+                                    </p>
                                   )}
                                 </div>
                               ))}
