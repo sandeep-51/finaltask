@@ -64,10 +64,11 @@ export async function sendQRCodeEmail(
     const teamMembersHtml = registration.teamMembers && registration.teamMembers.length > 0 
       ? `
         <div class="info-box">
-          <strong>Team Members (${registration.teamMembers.length}):</strong><br>
+          <strong>Additional Team Members (${registration.teamMembers.length}):</strong><br>
+          <p style="color: #666; font-size: 14px; margin-top: 5px;">Team Leader: ${registration.name}</p>
           ${registration.teamMembers.map((member, index) => `
             <div style="margin-top: 10px; padding-left: 15px;">
-              <strong>Member ${index + 1}:</strong><br>
+              <strong>Team Member ${index + 1}:</strong><br>
               ${member.name ? `Name: ${member.name}<br>` : ''}
               ${member.email ? `Email: ${member.email}<br>` : ''}
               ${member.phone ? `Phone: ${member.phone}<br>` : ''}
@@ -176,7 +177,7 @@ export async function sendQRCodeEmail(
                 Email: ${registration.email}<br>
                 ${registration.phone ? `Phone: ${registration.phone}<br>` : ''}
                 ${registration.organization ? `Organization: ${registration.organization}<br>` : ''}
-                Group Size: ${registration.groupSize}
+                Total Group Size: ${registration.groupSize} ${registration.groupSize === 1 ? 'person' : 'people'} (1 Team Leader${registration.teamMembers && registration.teamMembers.length > 0 ? ` + ${registration.teamMembers.length} Team ${registration.teamMembers.length === 1 ? 'Member' : 'Members'}` : ''})
               </div>
               
               ${teamMembersHtml}

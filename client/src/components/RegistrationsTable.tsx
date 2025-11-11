@@ -37,7 +37,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { Search, QrCode, CheckCircle2, XCircle, Clock, Trash2, Ban, ChevronDown, ChevronRight, User, Mail, Phone, Image as ImageIcon, Edit, Plus } from "lucide-react";
+import { Search, QrCode, CheckCircle2, XCircle, Clock, Trash2, Ban, ChevronDown, ChevronRight, User, Mail, Phone, Image as ImageIcon, Edit, Plus, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { TeamMember } from "@shared/schema";
@@ -88,7 +88,7 @@ export default function RegistrationsTable({
   const [editingRegistration, setEditingRegistration] = useState<Registration | null>(null);
   const [editedTeamMembers, setEditedTeamMembers] = useState<TeamMember[]>([]);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
-  
+
   const totalPages = Math.ceil((totalCount || registrations.length) / pageSize);
 
   const toggleRow = (id: string) => {
@@ -258,8 +258,16 @@ export default function RegistrationsTable({
                             <TableCell className="hidden xl:table-cell text-sm">
                               {reg.organization}
                             </TableCell>
-                            <TableCell className="text-center">
-                              <Badge variant="outline">{reg.groupSize}</Badge>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                <Users className="h-4 w-4 text-muted-foreground" />
+                                <span>{reg.groupSize}</span>
+                                {reg.teamMembers && reg.teamMembers.length > 0 && (
+                                  <span className="text-xs text-muted-foreground">
+                                    (1+{reg.teamMembers.length})
+                                  </span>
+                                )}
+                              </div>
                             </TableCell>
                             <TableCell className="text-center font-mono text-sm">
                               {reg.scans}/{reg.maxScans}

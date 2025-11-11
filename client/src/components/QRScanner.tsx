@@ -68,7 +68,7 @@ export default function QRScanner({ onScan }: QRScannerProps) {
 
   const handleStartScanning = async () => {
     setError(null);
-    
+
     try {
       const scanner = new Html5Qrcode(qrCodeRegionId);
       scannerRef.current = scanner;
@@ -84,7 +84,7 @@ export default function QRScanner({ onScan }: QRScannerProps) {
         async (decodedText) => {
           // Extract ticket ID from the decoded URL
           let ticketId = decodedText;
-          
+
           // If it's a full URL, extract the ticket ID
           if (decodedText.includes("?t=")) {
             const url = new URL(decodedText);
@@ -127,16 +127,23 @@ export default function QRScanner({ onScan }: QRScannerProps) {
     if (onScan) {
       scanningInProgressRef.current = true;
       lastScannedRef.current = ticketId;
-      
+
       try {
         const result = await Promise.resolve(onScan(ticketId));
         if (result) {
-          if (!result.valid && result.scansUsed > 0) {
+          // Adjust group size calculation: 1 for leader + number of team members
+          const totalGroupSize = 1 + (result.teamMembers?.length || 0);
+          const updatedResult = {
+            ...result,
+            groupSize: totalGroupSize,
+          };
+
+          if (!updatedResult.valid && updatedResult.scansUsed > 0) {
             setShowAlreadyScannedDialog(true);
           } else {
-            setLastResult(result);
+            setLastResult(updatedResult);
           }
-          setScanHistory((prev) => [result, ...prev].slice(0, 10));
+          setScanHistory((prev) => [updatedResult, ...prev].slice(0, 10));
         }
       } finally {
         // Reset scanning state after 3 seconds to allow scanning different QR codes

@@ -85,7 +85,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       console.log("📝 Received registration request:", req.body);
       const validated = insertRegistrationSchema.parse(req.body);
-      console.log("✅ Validation passed:", validated);
+      
+      // Calculate actual group size: 1 (leader) + number of team members
+      const teamMembersCount = validated.teamMembers?.length || 0;
+      const actualGroupSize = 1 + teamMembersCount;
+      
+      console.log(`✅ Validation passed. Group size: 1 leader + ${teamMembersCount} members = ${actualGroupSize}`);
       
       // Get the published form to associate with this registration
       const publishedForm = await storage.getPublishedForm();
@@ -94,6 +99,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const registration = await storage.createRegistration({
         ...validated,
+        groupSize: actualGroupSize,
         formId,
       });
       console.log("✅ Registration created:", registration);
