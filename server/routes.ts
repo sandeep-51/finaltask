@@ -12,8 +12,8 @@ import { insertRegistrationSchema, adminLoginSchema, eventFormSchema } from "@sh
 import { stringify } from "csv-stringify/sync";
 import PDFDocument from "pdfkit";
 import { sendQRCodeEmail, isEmailConfigured, testEmailConnection } from "./email";
-// Import the database connection (assuming it's exported from './storage')
-import { db } from "./storage";
+// Import the database connection from mongodb
+import { ticketDb } from "./mongodb";
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASS || "eventadmin@1111";
 const SITE_URL = process.env.SITE_URL || "http://localhost:5000";
@@ -124,9 +124,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const registration = await db.collection("registrations").findOne({
-        id: ticketId,
-      });
+      const registration = await ticketDb.getRegistration(ticketId);
 
       if (!registration) {
         return res.status(404).json({
@@ -197,43 +195,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Increment scan count
-      await db.collection("registrations").updateOne(
-        { id: ticketId },
-        {
-          $inc: { scansUsed: 1 },
-          $set: { lastScannedAt: new Date() },
-        }
-      );
+      // Use the verifyAndScan method which handles both scan increment and history
+      const scanResult = await storage.verifyAndScan(ticketId);
 
-      // Record scan in history
-      await db.collection("scan_history").insertOne({
-        ticketId,
-        registrationName: registration.name,
-        organization: registration.organization || "",
-        groupSize: registration.groupSize || 1,
-        teamMembers: teamMembers,
-        scannedAt: new Date(),
-        scansUsed: currentScans + 1,
-        maxScans: maxScans,
-      });
-
-      res.json({
-        valid: true,
-        message: `Valid! ${currentScans + 1}/${maxScans} scans used`,
-        registration: {
-          id: registration.id,
-          name: registration.name,
-          email: registration.email,
-          phone: registration.phone,
-          organization: registration.organization,
-          groupSize: registration.groupSize,
-          teamMembers: teamMembers,
-          customFieldData: customFieldData,
-          scansUsed: currentScans + 1,
-          maxScans: maxScans,
-        },
-      });
+      if (scanResult.valid && scanResult.registration) {
+        res.json({
+          valid: true,
+          message: scanResult.message,
+          registration: {
+            id: scanResult.registration.id,
+            name: scanResult.registration.name,
+            email: scanResult.registration.email,
+            phone: scanResult.registration.phone,
+            organization: scanResult.registration.organization,
+            groupSize: scanResult.registration.groupSize,
+            teamMembers: scanResult.registration.teamMembers || teamMembers,
+            customFieldData: scanResult.registration.customFieldData || customFieldData,
+            scansUsed: scanResult.registration.scans,
+            maxScans: scanResult.registration.maxScans,
+          },
+        });
+      } else {
+        res.json({
+          valid: false,
+          message: scanResult.message,
+        });
+      }
     } catch (error) {
       console.error("Error verifying ticket:", error);
       res.status(500).json({
