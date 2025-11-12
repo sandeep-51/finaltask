@@ -375,28 +375,44 @@ export default function RegistrationsTable({
                                         </Button>
                                       </div>
                                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                                        {reg.teamMembers.map((member, idx) => (
-                                          <Card key={idx} className="bg-background">
-                                            <CardContent className="pt-4 space-y-2">
-                                              <div className="flex items-center gap-2">
-                                                <User className="h-3 w-3 text-muted-foreground" />
-                                                <span className="font-medium text-sm">{member.name}</span>
-                                              </div>
-                                              {member.email && (
-                                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                                  <Mail className="h-3 w-3" />
-                                                  <span>{member.email}</span>
+                                        {reg.teamMembers.map((member, idx) => {
+                                          const additionalFields = Object.entries(member).filter(
+                                            ([key]) => !['name', 'email', 'phone'].includes(key)
+                                          );
+                                          
+                                          return (
+                                            <Card key={idx} className="bg-background">
+                                              <CardContent className="pt-4 space-y-2">
+                                                <div className="flex items-center gap-2 mb-2">
+                                                  <User className="h-3 w-3 text-muted-foreground" />
+                                                  <span className="font-medium text-sm">{member.name || 'Unnamed Member'}</span>
                                                 </div>
-                                              )}
-                                              {member.phone && (
-                                                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                                  <Phone className="h-3 w-3" />
-                                                  <span>{member.phone}</span>
-                                                </div>
-                                              )}
-                                            </CardContent>
-                                          </Card>
-                                        ))}
+                                                {member.phone && (
+                                                  <div className="flex items-center gap-2 text-xs">
+                                                    <Phone className="h-3 w-3 text-muted-foreground" />
+                                                    <span className="text-muted-foreground">{member.phone}</span>
+                                                  </div>
+                                                )}
+                                                {member.email && (
+                                                  <div className="flex items-center gap-2 text-xs">
+                                                    <Mail className="h-3 w-3 text-muted-foreground" />
+                                                    <span className="text-muted-foreground">{member.email}</span>
+                                                  </div>
+                                                )}
+                                                {additionalFields.length > 0 && (
+                                                  <div className="mt-2 pt-2 border-t space-y-1">
+                                                    {additionalFields.map(([key, value]) => (
+                                                      <div key={key} className="text-xs">
+                                                        <span className="font-medium text-muted-foreground uppercase tracking-wide">{key}: </span>
+                                                        <span className="text-foreground">{value as string}</span>
+                                                      </div>
+                                                    ))}
+                                                  </div>
+                                                )}
+                                              </CardContent>
+                                            </Card>
+                                          );
+                                        })}
                                       </div>
                                     </div>
                                   )}

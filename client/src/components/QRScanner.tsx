@@ -17,6 +17,8 @@ import {
   Clock,
   Users,
   Scan,
+  Phone,
+  Mail,
 } from "lucide-react";
 import { Html5Qrcode } from "html5-qrcode";
 
@@ -24,6 +26,7 @@ interface TeamMember {
   name?: string;
   email?: string;
   phone?: string;
+  [key: string]: string | undefined;
 }
 
 interface ScanResult {
@@ -256,8 +259,8 @@ export default function QRScanner({ onScan }: QRScannerProps) {
                             <p className="font-mono text-sm">{lastResult.ticketId.slice(0, 12)}...</p>
                           </div>
                           <div>
-                            <p className="text-xs text-muted-foreground">Name</p>
-                            <p className="font-medium">{lastResult.name}</p>
+                            <p className="text-xs text-muted-foreground">Team Leader</p>
+                            <p className="font-medium text-primary">{lastResult.name}</p>
                           </div>
                           <div>
                             <p className="text-xs text-muted-foreground">Organization</p>
@@ -273,28 +276,44 @@ export default function QRScanner({ onScan }: QRScannerProps) {
 
                         {lastResult.teamMembers && lastResult.teamMembers.length > 0 && (
                           <div className="pt-3 border-t">
-                            <p className="text-sm font-semibold mb-2 flex items-center gap-2">
+                            <p className="text-sm font-semibold mb-3 flex items-center gap-2">
                               <Users className="h-4 w-4" />
                               Team Members ({lastResult.teamMembers.length}):
                             </p>
-                            <div className="space-y-2 max-h-48 overflow-y-auto">
-                              {lastResult.teamMembers.map((member, idx) => (
-                                <div key={idx} className="text-sm p-3 bg-muted/50 rounded border">
-                                  <p className="font-semibold text-primary mb-1">
-                                    Member {idx + 1}: {member.name || "Unnamed"}
-                                  </p>
-                                  {member.email && (
-                                    <p className="text-xs text-muted-foreground flex items-center gap-1">
-                                      <span className="font-medium">Email:</span> {member.email}
+                            <div className="space-y-3 max-h-64 overflow-y-auto">
+                              {lastResult.teamMembers.map((member, idx) => {
+                                const additionalFields = Object.entries(member).filter(
+                                  ([key]) => !['name', 'email', 'phone'].includes(key)
+                                );
+                                
+                                return (
+                                  <div key={idx} className="text-sm p-3 bg-muted/50 rounded-lg border">
+                                    <p className="font-semibold text-primary mb-2">
+                                      Member {idx + 1}: {member.name || "Unnamed"}
                                     </p>
-                                  )}
-                                  {member.phone && (
-                                    <p className="text-xs text-muted-foreground flex items-center gap-1">
-                                      <span className="font-medium">Phone:</span> {member.phone}
-                                    </p>
-                                  )}
-                                </div>
-                              ))}
+                                    <div className="space-y-1">
+                                      {member.phone && (
+                                        <p className="text-xs flex items-start gap-2">
+                                          <Phone className="h-3 w-3 mt-0.5 text-muted-foreground" />
+                                          <span className="text-muted-foreground">{member.phone}</span>
+                                        </p>
+                                      )}
+                                      {member.email && (
+                                        <p className="text-xs flex items-start gap-2">
+                                          <Mail className="h-3 w-3 mt-0.5 text-muted-foreground" />
+                                          <span className="text-muted-foreground">{member.email}</span>
+                                        </p>
+                                      )}
+                                      {additionalFields.map(([key, value]) => (
+                                        <p key={key} className="text-xs">
+                                          <span className="font-medium text-muted-foreground uppercase tracking-wide">{key}: </span>
+                                          <span className="text-foreground">{value as string}</span>
+                                        </p>
+                                      ))}
+                                    </div>
+                                  </div>
+                                );
+                              })}
                             </div>
                           </div>
                         )}

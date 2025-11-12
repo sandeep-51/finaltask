@@ -133,47 +133,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Parse team members from customFieldData
-      const customFieldData = registration.customFieldData || {};
-      const teamMembers: any[] = [];
-
-      // Extract team member data from custom fields
-      Object.keys(customFieldData).forEach((key) => {
-        if (key.startsWith('member_') && key.includes('_name_')) {
-          const memberIndex = key.match(/member_(\d+)_name/)?.[1];
-          if (memberIndex) {
-            const memberData: any = {
-              name: customFieldData[key],
-            };
-
-            // Look for phone number
-            const phoneKey = Object.keys(customFieldData).find(k => 
-              k.includes(`member_${memberIndex}_phone`) || k.includes(`member_${memberIndex}_contact`)
-            );
-            if (phoneKey) {
-              memberData.phone = customFieldData[phoneKey];
-            }
-
-            // Look for UID
-            const uidKey = Object.keys(customFieldData).find(k => 
-              k.includes(`member_${memberIndex}_`) && 
-              !k.includes('_name') && 
-              !k.includes('_phone') && 
-              !k.includes('_contact')
-            );
-            if (uidKey) {
-              memberData.uid = customFieldData[uidKey];
-            }
-
-            teamMembers.push(memberData);
-          }
-        }
-      });
-
-      console.log("📋 Team members extracted:", teamMembers);
+      console.log("📋 Team members in registration:", registration.teamMembers);
 
       // Check if max scans reached
-      const currentScans = registration.scansUsed || 0;
+      const currentScans = registration.scans || 0;
       const maxScans = registration.maxScans || 1;
 
       if (currentScans >= maxScans) {
@@ -187,8 +150,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             phone: registration.phone,
             organization: registration.organization,
             groupSize: registration.groupSize,
-            teamMembers: teamMembers,
-            customFieldData: customFieldData,
+            teamMembers: registration.teamMembers || [],
+            customFieldData: registration.customFieldData || {},
             scansUsed: currentScans,
             maxScans: maxScans,
           },
@@ -209,8 +172,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
             phone: scanResult.registration.phone,
             organization: scanResult.registration.organization,
             groupSize: scanResult.registration.groupSize,
-            teamMembers: scanResult.registration.teamMembers || teamMembers,
-            customFieldData: scanResult.registration.customFieldData || customFieldData,
+            teamMembers: scanResult.registration.teamMembers || [],
+            customFieldData: scanResult.registration.customFieldData || {},
             scansUsed: scanResult.registration.scans,
             maxScans: scanResult.registration.maxScans,
           },
