@@ -91,7 +91,7 @@ export class TicketDatabase {
   async getAllRegistrations(limit?: number, offset?: number): Promise<Registration[]> {
     const database = await this.getDb();
     const query = database.collection("registrations").find({});
-    
+
     if (offset) {
       query.skip(offset);
     }
@@ -111,7 +111,7 @@ export class TicketDatabase {
   async getRegistrationsByFormId(formId: number, limit?: number, offset?: number): Promise<Registration[]> {
     const database = await this.getDb();
     const query = database.collection("registrations").find({ formId });
-    
+
     if (offset) {
       query.skip(offset);
     }
@@ -131,7 +131,7 @@ export class TicketDatabase {
   async getFormStats(formId: number) {
     const database = await this.getDb();
     const registrations = await database.collection("registrations").find({ formId }).toArray();
-    
+
     return {
       totalRegistrations: registrations.length,
       qrCodesGenerated: registrations.filter((r: any) => r.hasQR).length,
@@ -239,14 +239,14 @@ export class TicketDatabase {
 
   async createEventForm(data: any): Promise<any> {
     const database = await this.getDb();
-    
+
     // Get the highest id value
     const lastForm = await database.collection("event_forms")
       .find({})
       .sort({ id: -1 })
       .limit(1)
       .toArray();
-    
+
     const nextId = lastForm.length > 0 ? lastForm[0].id + 1 : 1;
 
     const form = {
@@ -301,7 +301,7 @@ export class TicketDatabase {
 
   async publishEventForm(id: number): Promise<boolean> {
     const database = await this.getDb();
-    
+
     // Unpublish all other forms
     await database.collection("event_forms").updateMany(
       {},
@@ -337,7 +337,7 @@ export class TicketDatabase {
     const query = database.collection("scan_history")
       .find({})
       .sort({ scannedAt: -1 });
-    
+
     if (limit) {
       query.limit(limit);
     }
@@ -352,7 +352,7 @@ export class TicketDatabase {
       .find({ ticketId })
       .sort({ scannedAt: -1 })
       .toArray();
-    
+
     return history as unknown as ScanHistory[];
   }
 
@@ -402,7 +402,7 @@ export class TicketDatabase {
 
   async exportToPDF(registrations: Registration[]): Promise<Buffer> {
     const PDFDocument = (await import('pdfkit')).default;
-    const doc = new PDFDocument({ margin: 50 });
+    const doc = new PDFDocument({ margin: 50, size: 'A4' });
     const chunks: Buffer[] = [];
 
     return new Promise((resolve, reject) => {
@@ -410,52 +410,110 @@ export class TicketDatabase {
       doc.on('end', () => resolve(Buffer.concat(chunks)));
       doc.on('error', reject);
 
-      // Title
-      doc.fontSize(20).text('Event Registration Report', { align: 'center' });
-      doc.moveDown();
-      doc.fontSize(12).text(`Generated: ${new Date().toLocaleString()}`, { align: 'center' });
-      doc.moveDown(2);
+      const pageWidth = doc.page.width - 100; // Account for margins
 
-      // Summary
-      doc.fontSize(14).text('Summary', { underline: true });
+      // Title
+      doc.fontSize(22).font('Helvetica-Bold').text('Event Registration Report', { align: 'center' });
       doc.moveDown(0.5);
-      doc.fontSize(11);
-      doc.text(`Total Registrations: ${registrations.length}`);
-      doc.text(`QR Codes Generated: ${registrations.filter(r => r.hasQR).length}`);
-      doc.text(`Total Check-ins: ${registrations.filter(r => r.status === 'checked-in').length}`);
-      doc.moveDown(2);
+      doc.fontSize(10).font('Helvetica').text(`Generated: ${new Date().toLocaleString()}`, { align: 'center' });
+      doc.moveDown(1);
+
+      // Summary stats in a box
+      doc.rect(50, doc.y, pageWidth, 60).stroke();
+      const statsY = doc.y + 10;
+      doc.fontSize(12).font('Helvetica-Bold').text('Summary Statistics', 60, statsY);
+      doc.fontSize(10).font('Helvetica');
+      doc.text(`Total Registrations: ${registrations.length}`, 60, statsY + 20);
+      doc.text(`Total Participants: ${registrations.reduce((sum, r) => sum + (r.groupSize || 1), 0)}`, 60, statsY + 35);
+      doc.moveDown(3);
 
       // Registrations list
-      doc.fontSize(14).text('Registrations', { underline: true });
-      doc.moveDown(0.5);
+      doc.fontSize(16).font('Helvetica-Bold').text('Registration Details', { underline: true });
+      doc.moveDown(1);
 
       registrations.forEach((reg, index) => {
-        if (index > 0) doc.moveDown(1);
-
-        doc.fontSize(11);
-        doc.text(`${index + 1}. ${reg.name} (${reg.id})`);
-        doc.fontSize(9);
-        doc.text(`   Email: ${reg.email}`);
-        doc.text(`   Phone: ${reg.phone}`);
-        doc.text(`   Organization: ${reg.organization}`);
-        doc.text(`   Group Size: ${reg.groupSize} | Scans: ${reg.scans}/${reg.maxScans} | Status: ${reg.status}`);
-
-        if (reg.teamMembers && reg.teamMembers.length > 0) {
-          doc.text(`   Team Members:`);
-          reg.teamMembers.forEach((member, idx) => {
-            doc.text(`     ${idx + 1}. ${member.name}${member.email ? ` (${member.email})` : ''}${member.phone ? ` - ${member.phone}` : ''}`);
-          });
+        // Check if we need a new page
+        if (doc.y > doc.page.height - 200) {
+          doc.addPage();
         }
 
+        const startY = doc.y;
+
+        // Registration header box
+        doc.rect(50, startY, pageWidth, 25).fillAndStroke('#f0f0f0', '#cccccc');
+        doc.fillColor('#000000');
+        doc.fontSize(12).font('Helvetica-Bold')
+           .text(`Registration #${index + 1}: ${reg.name}`, 60, startY + 8);
+        doc.fontSize(9).font('Helvetica')
+           .text(`ID: ${reg.id}`, pageWidth - 80, startY + 8, { width: 100, align: 'right' });
+
+        doc.moveDown(1.5);
+
+        // Basic Information
+        doc.fontSize(11).font('Helvetica-Bold').fillColor('#333333')
+           .text('Basic Information', 60);
+        doc.fontSize(9).font('Helvetica').fillColor('#000000');
+        doc.text(`Email: ${reg.email}`, 70);
+        doc.text(`Phone: ${reg.phone}`, 70);
+        doc.text(`Organization: ${reg.organization}`, 70);
+        doc.text(`Group Size: ${reg.groupSize} | Status: ${reg.status.toUpperCase()} | Scans Used: ${reg.scans}/${reg.maxScans}`, 70);
+        doc.moveDown(0.5);
+
+        // Team Members Section
+        if (reg.teamMembers && reg.teamMembers.length > 0) {
+          doc.fontSize(11).font('Helvetica-Bold').fillColor('#333333')
+             .text('Team Members', 60);
+          doc.fontSize(9).font('Helvetica').fillColor('#000000');
+
+          reg.teamMembers.forEach((member: any, idx: number) => {
+            doc.text(`${idx + 1}. ${member.name}`, 70);
+            if (member.email) {
+              doc.text(`   Email: ${member.email}`, 80);
+            }
+            if (member.phone) {
+              doc.text(`   Phone: ${member.phone}`, 80);
+            }
+
+            // Display custom fields for team members
+            Object.entries(member).forEach(([key, value]) => {
+              if (key !== 'name' && key !== 'email' && key !== 'phone' && value) {
+                const fieldLabel = key.replace(/^member_field_/, 'Field ');
+                doc.text(`   ${fieldLabel}: ${value}`, 80);
+              }
+            });
+
+            if (idx < reg.teamMembers.length - 1) {
+              doc.moveDown(0.3);
+            }
+          });
+          doc.moveDown(0.5);
+        }
+
+        // Custom Fields Section
         if (reg.customFieldData && Object.keys(reg.customFieldData).length > 0) {
+          doc.fontSize(11).font('Helvetica-Bold').fillColor('#333333')
+             .text('Additional Information', 60);
+          doc.fontSize(9).font('Helvetica').fillColor('#000000');
+
           Object.entries(reg.customFieldData).forEach(([key, value]) => {
+            const fieldLabel = key.replace(/^field_/, 'Field ');
             const displayValue = String(value).startsWith('/attached_assets/') 
               ? `[Photo: ${value}]` 
               : value;
-            doc.text(`   ${key}: ${displayValue}`);
+            doc.text(`${fieldLabel}: ${displayValue}`, 70);
           });
+          doc.moveDown(0.5);
         }
+
+        // Divider line
+        doc.strokeColor('#cccccc').moveTo(50, doc.y).lineTo(pageWidth + 50, doc.y).stroke();
+        doc.moveDown(1);
       });
+
+      // Footer on last page
+      const footerY = doc.page.height - 50;
+      doc.fontSize(8).font('Helvetica').fillColor('#666666')
+         .text(`End of Report - ${registrations.length} registrations`, 50, footerY, { align: 'center' });
 
       doc.end();
     });
@@ -509,7 +567,7 @@ export async function seedDefaultForm() {
     const existingForm = await ticketDb.getPublishedForm();
     if (!existingForm) {
       console.log("📝 No published form found. Seeding default form...");
-      
+
       const defaultForm = await ticketDb.createEventForm({
         title: "Event Registration",
         subtitle: "Register for our upcoming event",
@@ -576,7 +634,7 @@ export async function cleanupInvalidForms() {
   try {
     const db = await connectToDatabase();
     const forms = await db.collection("event_forms").find({}).toArray();
-    
+
     let deletedCount = 0;
     for (const form of forms) {
       // Check if form has invalid structure (missing required fields)
@@ -586,7 +644,7 @@ export async function cleanupInvalidForms() {
         console.log(`🗑️  Deleted invalid form: ${form._id}`);
       }
     }
-    
+
     if (deletedCount > 0) {
       console.log(`✅ Cleaned up ${deletedCount} invalid form(s)`);
     }
