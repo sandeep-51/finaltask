@@ -110,9 +110,18 @@ Preferred communication style: Simple, everyday language.
 **Multi-Entry Tracking**:
 - Each registration has `maxScans` limit that defaults to `groupSize`
 - Status transitions: pending → active → exhausted
-- Scanner displays remaining entries, group size, and all team member names
-- QR verification returns complete team roster with contact details
+- Scanner displays remaining entries, group size, team leader name, and all team member details
+- Team leader is clearly labeled in the QR scanner interface
+- QR verification returns complete team roster with all contact details and custom fields
+- Team members can have custom fields (e.g., registration number, UID, photo) which are displayed in both the admin dashboard and QR scanner
 - Scan history preserves full registration context at time of scan
+
+**Team Member Display**:
+- Admin dashboard shows all team member information including custom fields
+- Members list displays: name, phone, email, and any additional custom fields (like registration numbers, UIDs, etc.)
+- QR scanner shows "Team Leader" label for the primary registrant
+- All team member custom fields are properly formatted and displayed during QR scanning
+- Information is presented in a clean, organized format with proper labels and icons
 
 ### External Dependencies
 
